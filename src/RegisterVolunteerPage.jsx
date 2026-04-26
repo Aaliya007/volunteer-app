@@ -903,7 +903,7 @@ export default function RegisterVolunteerPage() {
               <div>
                 <div className="mb-5">
                   <p className="text-xl font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                    7. Optional CV Upload
+                    7.CV Upload
                   </p>
                   <h3 className="mt-2 text-l font-bold text-slate-900">
                     Upload your CV or profile document
