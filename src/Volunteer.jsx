@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bell,
   CalendarDays,
@@ -15,11 +15,47 @@ import {
   X,
 } from "lucide-react";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function Volunteer() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [activeNav, setActiveNav] = useState("Overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const [volunteers, setVolunteers] = useState([]);
+  const [loadingVolunteers, setLoadingVolunteers] = useState(true);
+  const [volunteerError, setVolunteerError] = useState("");
+
+  useEffect(() => {
+    const fetchVolunteers = async () => {
+      try {
+        setLoadingVolunteers(true);
+        setVolunteerError("");
+
+        const res = await fetch(`${API_BASE_URL}/volunteer/list`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch volunteers");
+        }
+
+        const data = await res.json();
+        setVolunteers(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+        setVolunteerError("Unable to load volunteer data.");
+      } finally {
+        setLoadingVolunteers(false);
+      }
+    };
+
+    if (API_BASE_URL) {
+      fetchVolunteers();
+    } else {
+      setVolunteerError("VITE_API_BASE_URL is not defined in .env");
+      setLoadingVolunteers(false);
+    }
+  }, []);
 
   const navItems = [
     { label: "Overview", icon: LayoutDashboard, href: "#" },
@@ -404,6 +440,54 @@ export default function Volunteer() {
                 </button>
               </div>
             </div>
+          </div>
+
+          <div className="mb-8 rounded-[1.5rem] border border-emerald-200/60 bg-white/80 p-6 shadow-lg backdrop-blur-xl">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Volunteer API Data</h2>
+                <p className="text-sm text-slate-500">
+                  Live list fetched from <code>{API_BASE_URL || "Missing .env value"}</code>
+                </p>
+              </div>
+              <div className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+                Total Volunteers: {volunteers.length}
+              </div>
+            </div>
+
+            {loadingVolunteers && (
+              <p className="mt-4 text-sm text-slate-500">Loading volunteers...</p>
+            )}
+
+            {volunteerError && (
+              <p className="mt-4 text-sm font-medium text-red-600">{volunteerError}</p>
+            )}
+
+            {!loadingVolunteers && !volunteerError && (
+              <div className="mt-4 overflow-x-auto">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {volunteers.length > 0 ? (
+                    volunteers.map((volunteer, index) => (
+                      <div
+                        key={volunteer._id || volunteer.id || index}
+                        className="rounded-2xl border border-emerald-200/60 bg-emerald-50/50 p-4"
+                      >
+                        <h3 className="font-semibold text-slate-900">
+                          {volunteer.name || volunteer.fullName || "Volunteer Name"}
+                        </h3>
+                        <div className="mt-2 space-y-1 text-sm text-slate-600">
+                          <p>Email: {volunteer.email || "N/A"}</p>
+                          <p>Phone: {volunteer.phone || "N/A"}</p>
+                          <p>Role: {volunteer.role || "Volunteer"}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-500">No volunteers found.</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

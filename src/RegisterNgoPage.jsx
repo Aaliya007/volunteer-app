@@ -1,7 +1,14 @@
 // src/pages/RegisterNgoPage.jsx
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://sahaay-923054627985.asia-south1.run.app";
 
 export default function RegisterNgoPage() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     ngoName: "",
     aliases: "",
@@ -24,6 +31,8 @@ export default function RegisterNgoPage() {
 
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const stateOptions = useMemo(
     () => [
@@ -32,6 +41,7 @@ export default function RegisterNgoPage() {
       "Assam",
       "Bihar",
       "Chhattisgarh",
+      "Delhi",
       "Goa",
       "Gujarat",
       "Haryana",
@@ -67,6 +77,13 @@ export default function RegisterNgoPage() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+      registration: "",
+      agreeDeclaration: "",
+    }));
   };
 
   const handleDistrictChange = (index, value) => {
@@ -75,6 +92,11 @@ export default function RegisterNgoPage() {
       updated[index] = value;
       return { ...prev, operatingDistricts: updated };
     });
+
+    setErrors((prev) => ({
+      ...prev,
+      operatingDistricts: "",
+    }));
   };
 
   const addDistrictField = () => {
@@ -94,18 +116,29 @@ export default function RegisterNgoPage() {
   const validate = () => {
     const nextErrors = {};
 
-    if (!formData.ngoName.trim()) nextErrors.ngoName = "NGO name is required.";
-    if (!formData.operatingState.trim())
+    if (!formData.ngoName.trim()) {
+      nextErrors.ngoName = "NGO name is required.";
+    }
+
+    if (!formData.operatingState.trim()) {
       nextErrors.operatingState = "Operating state is required.";
+    }
+
     if (formData.operatingDistricts.every((d) => !d.trim())) {
       nextErrors.operatingDistricts = "Add at least one operating district.";
     }
-    if (!formData.primaryName.trim())
+
+    if (!formData.primaryName.trim()) {
       nextErrors.primaryName = "Primary contact name is required.";
-    if (!formData.primaryPhone.trim())
+    }
+
+    if (!formData.primaryPhone.trim()) {
       nextErrors.primaryPhone = "Primary contact phone is required.";
-    if (!formData.primaryEmail.trim())
+    }
+
+    if (!formData.primaryEmail.trim()) {
       nextErrors.primaryEmail = "Primary contact email is required.";
+    }
 
     const hasAtLeastOneRegistration =
       formData.cert12A80G.trim() ||
@@ -147,21 +180,80 @@ export default function RegisterNgoPage() {
     formData.reference2Phone.trim() &&
     formData.agreeDeclaration;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const nextErrors = validate();
-    setErrors(nextErrors);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-    if (Object.keys(nextErrors).length > 0) return;
+    const validationErrors = validate();
+    setErrors(validationErrors);
 
-    const payload = {
-      ...formData,
-      operatingDistricts: formData.operatingDistricts.filter((d) => d.trim()),
-      verification_status: "pending",
-    };
+    if (Object.keys(validationErrors).length > 0) return;
 
-    console.log("NGO signup payload:", payload);
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setError("");
+    setSubmitted(false);
+
+    try {
+      const payload = {
+        ngoName: formData.ngoName.trim(),
+        aliases: formData.aliases.trim(),
+        cert12A80G: formData.cert12A80G.trim(),
+        nitiDarpanId: formData.nitiDarpanId.trim(),
+        societyTrustNumber: formData.societyTrustNumber.trim(),
+        operatingState: formData.operatingState.trim(),
+        operatingDistricts: formData.operatingDistricts.filter((d) => d.trim()),
+        primaryContact: {
+          name: formData.primaryName.trim(),
+          phone: formData.primaryPhone.trim(),
+          email: formData.primaryEmail.trim(),
+        },
+        references: [
+          {
+            name: formData.reference1Name.trim(),
+            org: formData.reference1Org.trim(),
+            phone: formData.reference1Phone.trim(),
+          },
+          {
+            name: formData.reference2Name.trim(),
+            org: formData.reference2Org.trim(),
+            phone: formData.reference2Phone.trim(),
+          },
+        ],
+        verificationStatus: "pending",
+      };
+
+      console.log("NGO Payload:", payload);
+
+      const response = await fetch(`${API_BASE_URL}/ngo/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          `Registration failed: ${response.status} - ${
+            data?.detail || data?.message || "Unknown error"
+          }`
+        );
+      }
+
+      console.log("NGO Registered:", data);
+
+      setSubmitted(true);
+
+      setTimeout(() => {
+        navigate("/ngo");
+      }, 1500);
+    } catch (err) {
+      console.error("Error:", err);
+      setError(err?.message || "Something went wrong during registration.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const inputClass =
@@ -192,8 +284,10 @@ export default function RegisterNgoPage() {
             </h1>
 
             <p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
-              Submit your NGO details for platform review. Your organization will be created with a verification status of{" "}
-              <span className="font-semibold text-amber-700">pending</span>, and your needs will remain hidden until approval is completed.
+              Submit your NGO details for platform review. Your organization will
+              be created with a verification status of{" "}
+              <span className="font-semibold text-amber-700">pending</span>, and
+              your needs will remain hidden until approval is completed.
             </p>
           </div>
 
@@ -214,10 +308,18 @@ export default function RegisterNgoPage() {
               </div>
             </div>
 
+            {error && (
+              <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                {error}
+              </div>
+            )}
+
             {!submitted ? (
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="rounded-[1.75rem] border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-white p-5 sm:p-6">
-                  <h3 className="text-lg font-bold text-slate-900">NGO identity</h3>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    NGO identity
+                  </h3>
                   <p className="mt-1 text-sm text-slate-600">
                     Add your NGO name and any aliases commonly used in the field.
                   </p>
@@ -232,11 +334,15 @@ export default function RegisterNgoPage() {
                         placeholder="Enter registered NGO name"
                         className={inputClass}
                       />
-                      {errors.ngoName && <p className={errorClass}>{errors.ngoName}</p>}
+                      {errors.ngoName && (
+                        <p className={errorClass}>{errors.ngoName}</p>
+                      )}
                     </div>
 
                     <div>
-                      <label className={labelClass}>Aliases / alternate names</label>
+                      <label className={labelClass}>
+                        Aliases / alternate names
+                      </label>
                       <input
                         name="aliases"
                         value={formData.aliases}
@@ -245,7 +351,8 @@ export default function RegisterNgoPage() {
                         className={inputClass}
                       />
                       <p className={helperClass}>
-                        Optional. Use only if your organization is known by other names.
+                        Optional. Use only if your organization is known by
+                        other names.
                       </p>
                     </div>
                   </div>
@@ -261,7 +368,9 @@ export default function RegisterNgoPage() {
 
                   <div className="mt-5 grid gap-5">
                     <div>
-                      <label className={labelClass}>12A / 80G certificate number</label>
+                      <label className={labelClass}>
+                        12A / 80G certificate number
+                      </label>
                       <input
                         name="cert12A80G"
                         value={formData.cert12A80G}
@@ -302,9 +411,12 @@ export default function RegisterNgoPage() {
                 </div>
 
                 <div className="rounded-[1.75rem] border border-emerald-200/60 bg-gradient-to-br from-white to-emerald-50 p-5 sm:p-6">
-                  <h3 className="text-lg font-bold text-slate-900">Operating region</h3>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    Operating region
+                  </h3>
                   <p className="mt-1 text-sm text-slate-600">
-                    Mention the state and manually type the districts where your NGO actively works.
+                    Mention the state and manually type the districts where your
+                    NGO actively works.
                   </p>
 
                   <div className="mt-5 grid gap-5">
@@ -364,16 +476,21 @@ export default function RegisterNgoPage() {
                       </button>
 
                       {errors.operatingDistricts && (
-                        <p className={errorClass}>{errors.operatingDistricts}</p>
+                        <p className={errorClass}>
+                          {errors.operatingDistricts}
+                        </p>
                       )}
                     </div>
                   </div>
                 </div>
 
                 <div className="rounded-[1.75rem] border border-amber-200/60 bg-gradient-to-br from-amber-50 to-white p-5 sm:p-6">
-                  <h3 className="text-lg font-bold text-slate-900">Reference contacts</h3>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    Reference contacts
+                  </h3>
                   <p className="mt-1 text-sm text-slate-600">
-                    Add two reference contacts from prior donors or partner NGOs.
+                    Add two reference contacts from prior donors or partner
+                    NGOs.
                   </p>
 
                   <div className="mt-5 grid gap-6 lg:grid-cols-2">
@@ -412,7 +529,9 @@ export default function RegisterNgoPage() {
                             className={inputClass}
                           />
                           {errors.reference1Phone && (
-                            <p className={errorClass}>{errors.reference1Phone}</p>
+                            <p className={errorClass}>
+                              {errors.reference1Phone}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -453,7 +572,9 @@ export default function RegisterNgoPage() {
                             className={inputClass}
                           />
                           {errors.reference2Phone && (
-                            <p className={errorClass}>{errors.reference2Phone}</p>
+                            <p className={errorClass}>
+                              {errors.reference2Phone}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -462,7 +583,9 @@ export default function RegisterNgoPage() {
                 </div>
 
                 <div className="rounded-[1.75rem] border border-sky-200/60 bg-gradient-to-br from-white to-sky-50 p-5 sm:p-6">
-                  <h3 className="text-lg font-bold text-slate-900">Primary contact</h3>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    Primary contact
+                  </h3>
 
                   <div className="mt-5 grid gap-5 md:grid-cols-3">
                     <div>
@@ -474,7 +597,9 @@ export default function RegisterNgoPage() {
                         placeholder="Enter full name"
                         className={inputClass}
                       />
-                      {errors.primaryName && <p className={errorClass}>{errors.primaryName}</p>}
+                      {errors.primaryName && (
+                        <p className={errorClass}>{errors.primaryName}</p>
+                      )}
                     </div>
 
                     <div>
@@ -486,7 +611,9 @@ export default function RegisterNgoPage() {
                         placeholder="Enter phone number"
                         className={inputClass}
                       />
-                      {errors.primaryPhone && <p className={errorClass}>{errors.primaryPhone}</p>}
+                      {errors.primaryPhone && (
+                        <p className={errorClass}>{errors.primaryPhone}</p>
+                      )}
                     </div>
 
                     <div>
@@ -499,7 +626,9 @@ export default function RegisterNgoPage() {
                         placeholder="Enter email address"
                         className={inputClass}
                       />
-                      {errors.primaryEmail && <p className={errorClass}>{errors.primaryEmail}</p>}
+                      {errors.primaryEmail && (
+                        <p className={errorClass}>{errors.primaryEmail}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -514,7 +643,8 @@ export default function RegisterNgoPage() {
                       className="mt-1 h-4 w-4 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500"
                     />
                     <span className="text-sm leading-7 text-slate-700">
-                      I confirm that the information is accurate and understand that the NGO remains pending until approval.
+                      I confirm that the information is accurate and understand
+                      that the NGO remains pending until approval.
                     </span>
                   </label>
                   {errors.agreeDeclaration && (
@@ -525,14 +655,16 @@ export default function RegisterNgoPage() {
                 <div className="flex justify-center pt-2">
                   <button
                     type="submit"
-                    disabled={!isFormReady}
+                    disabled={!isFormReady || isSubmitting}
                     className={`rounded-2xl px-8 py-4 text-sm font-semibold text-white shadow-lg transition ${
-                      isFormReady
-                        ? "bg-gradient-to-r from-emerald-500 via-green-500 to-sky-500 shadow-emerald-400/25 hover:-translate-y-0.5 hover:opacity-95"
-                        : "cursor-not-allowed bg-slate-300 text-slate-500 shadow-none"
+                      !isFormReady || isSubmitting
+                        ? "cursor-not-allowed bg-slate-300 text-slate-500 shadow-none"
+                        : "bg-gradient-to-r from-emerald-500 via-green-500 to-sky-500 shadow-emerald-400/25 hover:-translate-y-0.5 hover:opacity-95"
                     }`}
                   >
-                    Submit NGO application
+                    {isSubmitting
+                      ? "Submitting NGO application..."
+                      : "Submit NGO application"}
                   </button>
                 </div>
               </form>
@@ -542,7 +674,7 @@ export default function RegisterNgoPage() {
                   NGO application submitted
                 </h3>
                 <p className="mx-auto mt-3 max-w-2xl leading-8 text-slate-600">
-                  Your NGO has been submitted with verification_status = pending.
+                  Your NGO has been submitted with verificationStatus = pending.
                 </p>
               </div>
             )}

@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://sahaay-923054627985.asia-south1.run.app";
 
 const STATE_OPTIONS = [
   { label: "Andhra Pradesh", value: "andhra_pradesh" },
@@ -8,6 +11,7 @@ const STATE_OPTIONS = [
   { label: "Assam", value: "assam" },
   { label: "Bihar", value: "bihar" },
   { label: "Chhattisgarh", value: "chhattisgarh" },
+  { label: "Delhi", value: "delhi" },
   { label: "Goa", value: "goa" },
   { label: "Gujarat", value: "gujarat" },
   { label: "Haryana", value: "haryana" },
@@ -34,7 +38,6 @@ const STATE_OPTIONS = [
   { label: "Jharkhand", value: "jharkhand_duplicate" },
 ].filter((item, index, arr) => arr.findIndex((x) => x.label === item.label) === index);
 
-
 const SKILL_OPTIONS = [
   { label: "Teaching", value: "teaching" },
   { label: "Medical Help", value: "medical_help" },
@@ -45,19 +48,16 @@ const SKILL_OPTIONS = [
   { label: "Tech Support", value: "tech_support" },
 ];
 
-
 const TRAVEL_OPTIONS = [
   { label: "Yes (within city)", value: "within_city" },
   { label: "Yes (intercity)", value: "intercity" },
   { label: "No (only local)", value: "local_only" },
 ];
 
-
 const DAY_OPTIONS = [
   { label: "Weekdays", value: "weekdays" },
   { label: "Weekends", value: "weekends" },
 ];
-
 
 const TIME_OPTIONS = [
   { label: "Morning", value: "morning" },
@@ -65,13 +65,11 @@ const TIME_OPTIONS = [
   { label: "Evening", value: "evening" },
 ];
 
-
 const EXPERIENCE_OPTIONS = [
   { label: "Beginner", value: "beginner" },
   { label: "Intermediate", value: "intermediate" },
   { label: "Experienced", value: "experienced" },
 ];
-
 
 const initialForm = {
   fullName: "",
@@ -94,15 +92,15 @@ const initialForm = {
   cvFile: null,
 };
 
-
 export default function RegisterVolunteerPage() {
   const navigate = useNavigate();
-
 
   const [formData, setFormData] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [extractResult, setExtractResult] = useState(null);
 
   const selectedSkillLabels = useMemo(() => {
     return SKILL_OPTIONS.filter((skill) =>
@@ -110,20 +108,17 @@ export default function RegisterVolunteerPage() {
     ).map((skill) => skill.label);
   }, [formData.skills]);
 
-
   const handleChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
 
-
     setErrors((prev) => ({
       ...prev,
       [field]: "",
     }));
   };
-
 
   const handleArrayToggle = (field, value) => {
     setFormData((prev) => {
@@ -132,13 +127,11 @@ export default function RegisterVolunteerPage() {
         ? currentValues.filter((item) => item !== value)
         : [...currentValues, value];
 
-
       return {
         ...prev,
         [field]: nextValues,
       };
     });
-
 
     setErrors((prev) => ({
       ...prev,
@@ -146,16 +139,15 @@ export default function RegisterVolunteerPage() {
     }));
   };
 
-
   const handleFileChange = (event) => {
     const file = event.target.files?.[0] || null;
     handleChange("cvFile", file);
+    setUploadError("");
+    setExtractResult(null);
   };
-
 
   const validateForm = () => {
     const newErrors = {};
-
 
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required.";
     if (!formData.email.trim()) newErrors.email = "Email is required.";
@@ -187,11 +179,9 @@ export default function RegisterVolunteerPage() {
       newErrors.urgentAvailable = "Please select urgent task availability.";
     }
 
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
 
   const buildPayload = () => {
     return {
@@ -203,6 +193,7 @@ export default function RegisterVolunteerPage() {
       district: formData.district.trim(),
       areaPincode: formData.areaPincode.trim(),
       skills: formData.skills,
+      skillLabels: selectedSkillLabels,
       canTravel: formData.canTravel,
       remoteAvailable: formData.remoteAvailable === "yes",
       availability: {
@@ -221,33 +212,86 @@ export default function RegisterVolunteerPage() {
     };
   };
 
+  const uploadCvForExtraction = async (file) => {
+    const fileData = new FormData();
+    fileData.append("file", file);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+    const response = await fetch(`${API_BASE_URL}/extract/form`, {
+      method: "POST",
+      body: fileData,
+    });
 
+    if (!response.ok) {
+      throw new Error(`Extraction failed with status ${response.status}`);
+    }
 
-    if (!validateForm()) return;
+    return response.json();
+  };
 
+  const handleSubmit = async (event) => {
+  event.preventDefault();
 
+  if (!validateForm()) return;
+
+  setIsSubmitting(true);
+  setUploadError("");
+  setExtractResult(null);
+
+  try {
     const payload = buildPayload();
-    console.log("Volunteer Registration Payload:", payload);
+    let extractionData = null;
 
+    if (formData.cvFile) {
+      extractionData = await uploadCvForExtraction(formData.cvFile);
+      setExtractResult(extractionData);
+    }
 
+    const finalPayload = {
+      ...payload,
+      extractedNeedData: extractionData,
+    };
+
+    console.log("Sending to backend:", finalPayload);
+
+    const response = await fetch(`${API_BASE_URL}/volunteer/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(finalPayload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Registration failed: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log("Backend response:", data);
+
+    // ✅ Success UI
     setSubmitted(true);
-
 
     setTimeout(() => {
       navigate("/volunteer");
-    }, 1800);
-  };
+    }, 1500);
 
+  } catch (error) {
+    console.error("Error:", error);
+
+    setUploadError(
+      error?.message || "Something went wrong during registration."
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-sky-50 text-slate-900">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         @import url('https://fonts.cdnfonts.com/css/satoshi');
-
 
         @keyframes pageEnter {
           from {
@@ -260,7 +304,6 @@ export default function RegisterVolunteerPage() {
           }
         }
 
-
         @keyframes glowPulse {
           0%, 100% {
             opacity: 0.55;
@@ -272,17 +315,14 @@ export default function RegisterVolunteerPage() {
           }
         }
 
-
         .volunteer-page {
           font-family: 'Plus Jakarta Sans', sans-serif;
           animation: pageEnter 0.7s ease-out both;
         }
 
-
         .brand-heading {
           font-family: 'Satoshi', sans-serif;
         }
-
 
         .soft-grid {
           background-image:
@@ -291,18 +331,15 @@ export default function RegisterVolunteerPage() {
           background-size: 32px 32px;
         }
 
-
         .hero-glow {
           animation: glowPulse 4s ease-in-out infinite;
         }
-
 
         .glass-card {
           background: rgba(255, 255, 255, 0.78);
           backdrop-filter: blur(18px);
           -webkit-backdrop-filter: blur(18px);
         }
-
 
         .field-input {
           width: 100%;
@@ -315,18 +352,15 @@ export default function RegisterVolunteerPage() {
           transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
         }
 
-
         .field-input::placeholder {
           color: #94a3b8;
         }
-
 
         .field-input:focus {
           border-color: rgba(16, 185, 129, 0.65);
           box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
           transform: translateY(-1px);
         }
-
 
         .option-chip {
           border: 1px solid rgba(16, 185, 129, 0.16);
@@ -335,13 +369,11 @@ export default function RegisterVolunteerPage() {
           transition: all 0.25s ease;
         }
 
-
         .option-chip:hover {
           border-color: rgba(16, 185, 129, 0.38);
           background: rgba(236, 253, 245, 0.95);
           transform: translateY(-1px);
         }
-
 
         .option-chip.active {
           border-color: rgba(16, 185, 129, 0.55);
@@ -350,13 +382,11 @@ export default function RegisterVolunteerPage() {
           box-shadow: 0 10px 30px rgba(16, 185, 129, 0.10);
         }
 
-
         .radio-card {
           border: 1px solid rgba(16, 185, 129, 0.14);
           background: rgba(255, 255, 255, 0.85);
           transition: all 0.25s ease;
         }
-
 
         .radio-card:hover {
           transform: translateY(-2px);
@@ -364,18 +394,15 @@ export default function RegisterVolunteerPage() {
           box-shadow: 0 16px 34px rgba(15, 23, 42, 0.06);
         }
 
-
         .radio-card.active {
           border-color: rgba(16, 185, 129, 0.55);
           background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(125, 211, 252, 0.12));
           box-shadow: 0 18px 42px rgba(16, 185, 129, 0.12);
         }
 
-
         .section-badge {
           letter-spacing: 0.22em;
         }
-
 
         @media (prefers-reduced-motion: reduce) {
           .volunteer-page,
@@ -389,13 +416,11 @@ export default function RegisterVolunteerPage() {
         }
       `}</style>
 
-
       <div className="volunteer-page relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-20 soft-grid opacity-60" />
         <div className="pointer-events-none absolute left-[-5rem] top-16 -z-10 h-72 w-72 rounded-full bg-emerald-300/20 blur-3xl hero-glow" />
         <div className="pointer-events-none absolute right-[-4rem] top-24 -z-10 h-72 w-72 rounded-full bg-sky-300/20 blur-3xl hero-glow" />
         <div className="pointer-events-none absolute bottom-[-6rem] left-1/3 -z-10 h-80 w-80 rounded-full bg-lime-200/20 blur-3xl hero-glow" />
-
 
         <header className="sticky top-0 z-40 border-b border-emerald-200/50 bg-white/75 backdrop-blur-xl">
           <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4 lg:px-10">
@@ -415,21 +440,19 @@ export default function RegisterVolunteerPage() {
           </div>
         </header>
 
-
         <main className="mx-auto max-w-5xl px-6 py-10 lg:px-10 lg:py-14">
           <section className="glass-card rounded-[2rem] border border-white/60 p-6 shadow-2xl shadow-emerald-100/40 sm:p-8 lg:p-10">
             <div className="mb-10 text-center">
               <p className="text-2xl font-semibold uppercase tracking-[0.22em] text-emerald-600">
                 Volunteer Registration Form
               </p>
-              <h2 className="brand-heading mt-3 text-xs font-black tracking-[-0.05em] text-slate-900 sm:text-3xl">
+              <h2 className="brand-heading mt-3 text-xl font-black tracking-[-0.05em] text-slate-900 sm:text-3xl">
                 Build your volunteer profile
               </h2>
-              <p className="mx-auto mt-3 max-w-2xl text-s leading-6 text-slate-600 sm:text-sm">
+              <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
                 Add your details below. Keep it accurate so NGOs can reach you quickly and HelpLink can recommend suitable work.
               </p>
             </div>
-
 
             {submitted && (
               <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-center text-emerald-800">
@@ -437,6 +460,11 @@ export default function RegisterVolunteerPage() {
               </div>
             )}
 
+            {uploadError && (
+              <div className="mb-8 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-center text-rose-700">
+                {uploadError}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-10">
               <div>
@@ -444,11 +472,10 @@ export default function RegisterVolunteerPage() {
                   <p className="text-xl font-semibold uppercase tracking-[0.2em] text-emerald-600">
                     1. Basic Details
                   </p>
-                  <h3 className="mt-2 text-l font-bold text-slate-900">
+                  <h3 className="mt-2 text-lg font-bold text-slate-900">
                     Simple and essential information
                   </h3>
                 </div>
-
 
                 <div className="grid gap-5 md:grid-cols-2">
                   <div className="md:col-span-2">
@@ -467,7 +494,6 @@ export default function RegisterVolunteerPage() {
                     )}
                   </div>
 
-
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
                       Email *
@@ -483,7 +509,6 @@ export default function RegisterVolunteerPage() {
                       <p className="mt-2 text-sm text-rose-600">{errors.email}</p>
                     )}
                   </div>
-
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -501,7 +526,6 @@ export default function RegisterVolunteerPage() {
                     )}
                   </div>
 
-
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
                       Age
@@ -515,7 +539,6 @@ export default function RegisterVolunteerPage() {
                       onChange={(e) => handleChange("age", e.target.value)}
                     />
                   </div>
-
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -538,7 +561,6 @@ export default function RegisterVolunteerPage() {
                     )}
                   </div>
 
-
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
                       District *
@@ -555,7 +577,6 @@ export default function RegisterVolunteerPage() {
                     )}
                   </div>
 
-
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
                       Area / Pincode
@@ -571,22 +592,19 @@ export default function RegisterVolunteerPage() {
                 </div>
               </div>
 
-
               <div>
                 <div className="mb-5">
                   <p className="text-xl font-semibold uppercase tracking-[0.2em] text-emerald-600">
                     2. Skills
                   </p>
-                  <h3 className="mt-2 text-l font-bold text-slate-900">
+                  <h3 className="mt-2 text-lg font-bold text-slate-900">
                     Select the skills you can contribute
                   </h3>
                 </div>
 
-
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {SKILL_OPTIONS.map((skill) => {
                     const active = formData.skills.includes(skill.value);
-
 
                     return (
                       <button
@@ -613,23 +631,20 @@ export default function RegisterVolunteerPage() {
                   })}
                 </div>
 
-
                 {errors.skills && (
                   <p className="mt-3 text-sm text-rose-600">{errors.skills}</p>
                 )}
               </div>
-
 
               <div>
                 <div className="mb-5">
                   <p className="text-xl font-semibold uppercase tracking-[0.2em] text-emerald-600">
                     3. Mobility
                   </p>
-                  <h3 className="mt-2 text-l font-bold text-slate-900">
+                  <h3 className="mt-2 text-lg font-bold text-slate-900">
                     Help us match nearby and travel-ready volunteers
                   </h3>
                 </div>
-
 
                 <div className="mt-6">
                   <p className="mb-3 text-sm font-semibold text-slate-700">
@@ -655,7 +670,6 @@ export default function RegisterVolunteerPage() {
                     <p className="mt-3 text-sm text-rose-600">{errors.canTravel}</p>
                   )}
                 </div>
-
 
                 <div className="mt-6">
                   <p className="mb-3 text-sm font-semibold text-slate-700">
@@ -683,17 +697,15 @@ export default function RegisterVolunteerPage() {
                 </div>
               </div>
 
-
               <div>
                 <div className="mb-5">
                   <p className="text-xl font-semibold uppercase tracking-[0.2em] text-emerald-600">
                     4. Availability
                   </p>
-                  <h3 className="mt-2 text-l font-bold text-slate-900">
+                  <h3 className="mt-2 text-lg font-bold text-slate-900">
                     For better allocation
                   </h3>
                 </div>
-
 
                 <div>
                   <p className="mb-3 text-sm font-semibold text-slate-700">
@@ -724,7 +736,6 @@ export default function RegisterVolunteerPage() {
                     <p className="mt-3 text-sm text-rose-600">{errors.availabilityDays}</p>
                   )}
                 </div>
-
 
                 <div className="mt-6">
                   <p className="mb-3 text-sm font-semibold text-slate-700">
@@ -758,7 +769,6 @@ export default function RegisterVolunteerPage() {
                   )}
                 </div>
 
-
                 <div className="mt-6">
                   <label className="mb-2 block text-sm font-semibold text-slate-700">
                     Calendar / Additional availability notes
@@ -773,17 +783,15 @@ export default function RegisterVolunteerPage() {
                 </div>
               </div>
 
-
               <div>
                 <div className="mb-5">
                   <p className="text-xl font-semibold uppercase tracking-[0.2em] text-emerald-600">
                     5. Experience
                   </p>
-                  <h3 className="mt-2 text-l font-bold text-slate-900">
+                  <h3 className="mt-2 text-lg font-bold text-slate-900">
                     Tell us about your volunteering background
                   </h3>
                 </div>
-
 
                 <div>
                   <p className="mb-3 text-sm font-semibold text-slate-700">
@@ -792,7 +800,6 @@ export default function RegisterVolunteerPage() {
                   <div className="grid gap-4 md:grid-cols-3">
                     {EXPERIENCE_OPTIONS.map((option) => {
                       const active = formData.experienceLevel === option.value;
-
 
                       return (
                         <button
@@ -811,7 +818,6 @@ export default function RegisterVolunteerPage() {
                     <p className="mt-3 text-sm text-rose-600">{errors.experienceLevel}</p>
                   )}
                 </div>
-
 
                 <div className="mt-6">
                   <p className="mb-3 text-sm font-semibold text-slate-700">
@@ -840,7 +846,6 @@ export default function RegisterVolunteerPage() {
                   )}
                 </div>
 
-
                 {formData.previousVolunteering === "yes" && (
                   <div className="mt-6">
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -861,17 +866,15 @@ export default function RegisterVolunteerPage() {
                 )}
               </div>
 
-
               <div>
                 <div className="mb-5">
                   <p className="text-xl font-semibold uppercase tracking-[0.2em] text-emerald-600">
                     6. Emergency Availability
                   </p>
-                  <h3 className="mt-2 text-l font-bold text-slate-900">
+                  <h3 className="mt-2 text-lg font-bold text-slate-900">
                     Are you available for urgent tasks?
                   </h3>
                 </div>
-
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   {["yes", "no"].map((value) => {
@@ -899,20 +902,16 @@ export default function RegisterVolunteerPage() {
                 )}
               </div>
 
-
               <div>
                 <div className="mb-5">
                   <p className="text-xl font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                    7.CV Upload
+                    7. CV Upload
                   </p>
-                  <h3 className="mt-2 text-l font-bold text-slate-900">
+                  <h3 className="mt-2 text-lg font-bold text-slate-900">
                     Upload your CV or profile document
                   </h3>
-                  <p className="mt-2 text-xs text-slate-600">
-                    Optional
-                  </p>
+                  <p className="mt-2 text-xs text-slate-600">Optional</p>
                 </div>
-
 
                 <div className="rounded-[1.5rem] border border-dashed border-emerald-300 bg-emerald-50/60 p-6">
                   <label className="mb-3 block text-sm font-semibold text-slate-700">
@@ -920,37 +919,45 @@ export default function RegisterVolunteerPage() {
                   </label>
                   <input
                     type="file"
-                    accept=".pdf,.doc,.docx"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                     onChange={handleFileChange}
                     className="block w-full text-sm text-slate-700 file:mr-4 file:rounded-xl file:border-0 file:bg-emerald-500 file:px-4 file:py-3 file:font-semibold file:text-white hover:file:bg-emerald-600"
                   />
                   <p className="mt-3 text-sm text-slate-500">
-                    Accepted formats: PDF, DOC, DOCX
+                    Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG
                   </p>
-
 
                   {formData.cvFile && (
                     <div className="mt-4 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm text-emerald-700">
                       Selected file: <span className="font-semibold">{formData.cvFile.name}</span>
                     </div>
                   )}
+
+                  {extractResult && (
+                    <div className="mt-4">
+                      <p className="mb-2 text-sm font-semibold text-slate-700">
+                        Extracted backend response
+                      </p>
+                      <pre className="overflow-auto rounded-2xl bg-slate-900 p-4 text-xs text-slate-100">
+                        {JSON.stringify(extractResult, null, 2)}
+                      </pre>
+                    </div>
+                  )}
                 </div>
               </div>
-
 
               <div className="flex flex-col gap-4 border-t border-emerald-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
                 <p className="max-w-2xl text-sm leading-6 text-slate-500">
                   By registering, you create a volunteer profile that can later be matched against NGO needs based on skills, time, and location.
                 </p>
 
-
                 <div className="flex flex-wrap gap-3">
-                  
                   <button
                     type="submit"
-                    className="rounded-2xl bg-gradient-to-r from-emerald-500 via-green-500 to-sky-500 px-7 py-3 font-semibold text-white shadow-xl shadow-emerald-400/20 transition hover:-translate-y-1"
+                    disabled={isSubmitting}
+                    className="rounded-2xl bg-gradient-to-r from-emerald-500 via-green-500 to-sky-500 px-7 py-3 font-semibold text-white shadow-xl shadow-emerald-400/20 transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    Register as Volunteer
+                    {isSubmitting ? "Processing..." : "Register as Volunteer"}
                   </button>
                 </div>
               </div>
