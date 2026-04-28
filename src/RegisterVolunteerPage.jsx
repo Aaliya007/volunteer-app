@@ -430,12 +430,12 @@ export default function RegisterVolunteerPage() {
         <header className="sticky top-0 z-40 border-b border-emerald-200/50 bg-white/75 backdrop-blur-xl">
           <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4 lg:px-10">
             <button onClick={() => navigate("/")} className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-green-500 to-sky-500 shadow-lg shadow-emerald-400/20">
-                <span className="text-xl font-black text-white">H</span>
+              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-emerald-400/10">
+                <img src="/src/assets/logo.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
               </div>
               <div className="text-left">
                 <h1 className="brand-heading text-xl font-black tracking-[-0.03em] text-slate-900">
-                  HelpLink
+                  Sahaay
                 </h1>
                 <p className="text-xs font-medium text-emerald-700">
                   Volunteer Registration
@@ -456,7 +456,7 @@ export default function RegisterVolunteerPage() {
                 Build your volunteer profile
               </h2>
               <p className="mx-auto mt-3 max-w-2xl text-s leading-6 text-slate-600 sm:text-sm">
-                Add your details below. Keep it accurate so NGOs can reach you quickly and HelpLink can recommend suitable work.
+                Add your details below. Keep it accurate so NGOs can reach you quickly and Sahaay can recommend suitable work.
               </p>
             </div>
 

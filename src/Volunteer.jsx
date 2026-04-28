@@ -19,7 +19,7 @@ export default function Volunteer() {
   useEffect(() => {
     async function fetchMatches() {
       try {
-        const functions = getFunctions(app);
+        const functions = getFunctions(app, "us-central1");
         const getMatches = httpsCallable(functions, "getMatches");
         const result = await getMatches({ topN: 5, volunteerId: "O3Vpe78WAEf2mnbblu0X" });
         setMatches(result.data.matches || []);
@@ -242,12 +242,12 @@ export default function Volunteer() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-emerald-200/60 bg-white/85 backdrop-blur-xl shadow-sm">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-green-500 to-sky-500 shadow-lg shadow-emerald-400/20">
-              <span className="text-xl font-black text-white">H</span>
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-emerald-400/10">
+              <img src="/src/assets/logo.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
             </div>
             <div>
               <h1 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                HelpLink
+                Sahaay
               </h1>
               <p className="text-xs text-emerald-700">Volunteer Dashboard</p>
             </div>
@@ -307,12 +307,12 @@ export default function Volunteer() {
       >
         <div className="flex h-20 items-center justify-between border-b border-emerald-200/60 px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-green-500 to-sky-500 shadow-lg shadow-emerald-400/20">
-              <span className="text-xl font-black text-white">H</span>
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-emerald-400/10">
+              <img src="/src/assets/logo.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
             </div>
             <div>
               <h1 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                HelpLink
+                Sahaay
               </h1>
               <p className="text-xs text-emerald-700">Volunteer Portal</p>
             </div>
@@ -333,8 +333,8 @@ export default function Volunteer() {
               key={item.label}
               href={item.href}
               className={`group flex items-center gap-3 rounded-2xl border p-4 transition-all ${activeNav === item.label
-                  ? "border-emerald-200 bg-gradient-to-r from-emerald-100 to-sky-100 shadow-md"
-                  : "border-transparent hover:bg-emerald-50/80"
+                ? "border-emerald-200 bg-gradient-to-r from-emerald-100 to-sky-100 shadow-md"
+                : "border-transparent hover:bg-emerald-50/80"
                 }`}
               onClick={() => {
                 setActiveNav(item.label);
@@ -449,8 +449,8 @@ export default function Volunteer() {
                 <button
                   key={filter}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${activeFilter === filter
-                      ? "bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-lg shadow-emerald-400/20"
-                      : "border border-emerald-200 bg-white/80 text-slate-700 hover:bg-emerald-50"
+                    ? "bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-lg shadow-emerald-400/20"
+                    : "border border-emerald-200 bg-white/80 text-slate-700 hover:bg-emerald-50"
                     }`}
                   onClick={() => setActiveFilter(filter)}
                 >
@@ -630,7 +630,9 @@ export default function Volunteer() {
                     <span>🎯 Match: {match.matchScore}%</span>
                   </div>
                   <p className="mt-2 text-xs text-slate-600">{match.explanation}</p>
-                  <button className="mt-5 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:shadow-emerald-400/25">
+                  <button
+                    onClick={() => alert("Task accepted! The NGO coordinator has been notified.")}
+                    className="mt-5 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:shadow-emerald-400/25">
                     Accept Task
                   </button>
                 </div>

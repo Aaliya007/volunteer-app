@@ -339,7 +339,7 @@ export default function LandingPage() {
         <div className={`intro-screen ${introExit ? "exit" : ""}`}>
           <div className="intro-logo-wrap">
             <div className="intro-ring" />
-            <h1 className="intro-title tracking-[-0.05em]">HelpLink</h1>
+            <h1 className="intro-title tracking-[-0.05em]">Sahaay</h1>
             <div className="intro-accent" />
           </div>
         </div>
@@ -358,12 +358,12 @@ export default function LandingPage() {
           <header className="fixed inset-x-0 top-0 z-50 border-b border-emerald-200/60 bg-white/85 backdrop-blur-xl shadow-sm">
             <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-green-500 to-sky-500 shadow-lg shadow-emerald-400/20">
-                  <span className="text-xl font-black text-white">H</span>
+                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-emerald-400/10">
+                  <img src="/sahaay.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
                 </div>
                 <div>
                   <h1 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                    HelpLink
+                    Sahaay
                   </h1>
                   <p className="text-xs font-medium text-emerald-700">
                     Smart NGO × Volunteer Response
@@ -427,12 +427,12 @@ export default function LandingPage() {
                 </div>
 
                 <div className="hero-reveal-delay mb-8 flex items-center gap-5">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-lg">
-                    <span className="text-2xl font-semibold text-white">H</span>
+                  <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white/90 backdrop-blur-md shadow-2xl">
+                    <img src="/sahaay.png" alt="Sahaay Logo" className="h-full w-full object-contain p-2" />
                   </div>
                   <h1 className="hero-title">
                     <span className="bg-gradient-to-r from-emerald-300 via-green-400 to-sky-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(34,197,94,0.35)]">
-                      HelpLink
+                      Sahaay
                     </span>
                   </h1>
                 </div>
@@ -827,7 +827,7 @@ export default function LandingPage() {
 
                   <p className="mx-auto mt-4 max-w-2xl text-slate-600 leading-7">
                     A clean and guided flow for volunteers and NGOs to connect, respond,
-                    and coordinate smoothly through HelpLink.
+                    and coordinate smoothly through Sahaay.
                   </p>
                 </div>
 
@@ -881,15 +881,15 @@ export default function LandingPage() {
                       Better teamwork starts with clearer coordination
                     </p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
-                      HelpLink brings volunteers and NGOs into one connected workflow.
+                      Sahaay brings volunteers and NGOs into one connected workflow.
                     </p>
                   </div>
                 </div>
               </div>
             </section>
 
-            {/* WHY HELPLINK STANDS OUT */}
-            <section id="why-helplink" className="mx-auto max-w-7xl px-6 py-20 lg:px-10">
+            {/* WHY SAHAAY STANDS OUT */}
+            <section id="why-sahaay" className="mx-auto max-w-7xl px-6 py-20 lg:px-10">
               <style>{`
                 @keyframes whyFadeUp {
                   0% {
@@ -1049,7 +1049,7 @@ export default function LandingPage() {
                     className="why-heading text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600"
                     style={{ animationDelay: "0.05s" }}
                   >
-                    Why HelpLink Stands Out
+                    Why Sahaay Stands Out
                   </p>
 
                   <h2
@@ -1180,7 +1180,7 @@ export default function LandingPage() {
 
           {/* FOOTER */}
           <footer className="border-t border-emerald-200/50 bg-white/80 px-6 py-8 text-center text-sm font-medium text-slate-600">
-            Built for NGO and volunteer coordination • Team HelpLink
+            Built for NGO and volunteer coordination • Team Sahaay
           </footer>
 
           {/* MODAL */}

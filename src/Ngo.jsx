@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { db } from "./firebase";
 import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import {
@@ -22,6 +23,7 @@ export default function Ngo() {
   const [activeNav, setActiveNav] = useState("Overview");
   const [taskFilter, setTaskFilter] = useState("All");
   const [menuHidden, setMenuHidden] = useState(false);
+  const navigate = useNavigate();
   const [needs, setNeeds] = useState([]);
 
   useEffect(() => {
@@ -175,12 +177,12 @@ export default function Ngo() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-emerald-200/60 bg-white/85 backdrop-blur-xl">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-green-500 to-sky-500 shadow-lg shadow-emerald-400/20">
-              <span className="text-xl font-black text-white">H</span>
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-emerald-400/10">
+              <img src="/src/assets/logo.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
             </div>
             <div>
               <h1 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                HelpLink
+                Sahaay
               </h1>
               <p className="text-xs text-emerald-700">NGO Dashboard</p>
             </div>
@@ -219,12 +221,12 @@ export default function Ngo() {
       {!menuHidden && (
         <aside className="fixed left-0 top-0 z-40 hidden h-full w-[280px] flex-col border-r border-emerald-200/60 bg-white/80 backdrop-blur-xl lg:flex">
           <div className="flex h-20 items-center gap-3 border-b border-emerald-200/60 px-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-green-500 to-sky-500 shadow-lg shadow-emerald-400/20">
-              <span className="text-xl font-black text-white">H</span>
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-emerald-400/10">
+              <img src="/src/assets/logo.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
             </div>
             <div>
               <h2 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                HelpLink
+                Sahaay
               </h2>
               <p className="text-xs text-emerald-700">NGO Portal</p>
             </div>
@@ -276,12 +278,12 @@ export default function Ngo() {
         <aside className="fixed left-0 top-0 z-50 flex h-full w-[300px] max-w-[90vw] flex-col border-r border-emerald-200/60 bg-white/95 backdrop-blur-xl lg:hidden">
           <div className="flex h-20 items-center justify-between border-b border-emerald-200/60 px-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-green-500 to-sky-500 shadow-lg shadow-emerald-400/20">
-                <span className="text-xl font-black text-white">H</span>
+              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-emerald-400/10">
+                <img src="/src/assets/logo.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
               </div>
               <div>
                 <h2 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                  HelpLink
+                  Sahaay
                 </h2>
                 <p className="text-xs text-emerald-700">NGO Portal</p>
               </div>
@@ -340,8 +342,10 @@ export default function Ngo() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <button className="rounded-2xl bg-emerald-500 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-400/20 transition hover:bg-emerald-600">
-                  Upload New Task
+                <button
+                  onClick={() => navigate("/submit-need")}
+                  className="rounded-2xl bg-emerald-500 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-400/20 transition hover:bg-emerald-600">
+                  Submit Field Report
                 </button>
                 <button className="rounded-2xl border border-emerald-200 bg-white px-6 py-3 font-semibold text-slate-800 transition hover:bg-emerald-50">
                   View Volunteers
