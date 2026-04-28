@@ -222,23 +222,53 @@ export default function RegisterVolunteerPage() {
   };
 
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
 
     if (!validateForm()) return;
 
+    const skillMapping = {
+      teaching: "teaching",
+      medical_help: "first_aid",
+      food_distribution: "cooking",
+      logistics: "driving",
+      event_management: "manual_labor",
+      fundraising: "fundraising",
+      tech_support: "tech_support",
+    };
 
-    const payload = buildPayload();
-    console.log("Volunteer Registration Payload:", payload);
+    const canonicalSkills = formData.skills.map(s => skillMapping[s] || s);
 
+    const payload = {
+      fullName: formData.fullName.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      age: formData.age ? Number(formData.age) : 18,
+      state: formData.state,
+      city: formData.district.trim(),
+      skills: canonicalSkills,
+    };
 
-    setSubmitted(true);
+    try {
+      const response = await fetch("https://sahaay-923054627985.asia-south1.run.app/volunteer/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
+      const result = await response.json();
+      console.log("Backend response:", result);
 
-    setTimeout(() => {
-      navigate("/volunteer");
-    }, 1800);
+      if (result.status === "success" || response.ok) {
+        setSubmitted(true);
+        setTimeout(() => navigate("/volunteer"), 1800);
+      } else {
+        alert("Registration failed: " + (result.message || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Registration error:", err);
+      alert("Failed to connect to server. Please try again.");
+    }
   };
 
 
@@ -599,11 +629,10 @@ export default function RegisterVolunteerPage() {
                         <div className="flex items-center justify-between gap-3">
                           <span className="font-semibold">{skill.label}</span>
                           <span
-                            className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                              active
-                                ? "bg-emerald-500 text-white"
-                                : "bg-slate-100 text-slate-500"
-                            }`}
+                            className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${active
+                              ? "bg-emerald-500 text-white"
+                              : "bg-slate-100 text-slate-500"
+                              }`}
                           >
                             {active ? "✓" : "+"}
                           </span>
@@ -945,7 +974,7 @@ export default function RegisterVolunteerPage() {
 
 
                 <div className="flex flex-wrap gap-3">
-                  
+
                   <button
                     type="submit"
                     className="rounded-2xl bg-gradient-to-r from-emerald-500 via-green-500 to-sky-500 px-7 py-3 font-semibold text-white shadow-xl shadow-emerald-400/20 transition hover:-translate-y-1"

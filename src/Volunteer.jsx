@@ -1,18 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { app } from "./firebase";
 import {
-  Bell,
-  CalendarDays,
-  CheckCircle2,
-  Clock3,
-  ClipboardList,
-  HandHeart,
-  LayoutDashboard,
-  Mail,
-  Menu,
-  Settings,
-  ShieldCheck,
-  User,
-  X,
+  Bell, CalendarDays, CheckCircle2, Clock3, ClipboardList,
+  HandHeart, LayoutDashboard, Mail, Menu, Settings,
+  ShieldCheck, User, X,
 } from "lucide-react";
 
 export default function Volunteer() {
@@ -20,6 +12,26 @@ export default function Volunteer() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [activeNav, setActiveNav] = useState("Overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [matches, setMatches] = useState([]);
+  const [matchesLoading, setMatchesLoading] = useState(true);
+  const [matchesError, setMatchesError] = useState(null);
+
+  useEffect(() => {
+    async function fetchMatches() {
+      try {
+        const functions = getFunctions(app);
+        const getMatches = httpsCallable(functions, "getMatches");
+        const result = await getMatches({ topN: 5, volunteerId: "O3Vpe78WAEf2mnbblu0X" });
+        setMatches(result.data.matches || []);
+      } catch (err) {
+        console.error("getMatches error:", err);
+        setMatchesError(err.message);
+      } finally {
+        setMatchesLoading(false);
+      }
+    }
+    fetchMatches();
+  }, []);
 
   const navItems = [
     { label: "Overview", icon: LayoutDashboard, href: "#" },
@@ -160,20 +172,7 @@ export default function Volunteer() {
     },
   ];
 
-  const opportunities = [
-    {
-      title: "Opportunity title placeholder",
-      location: "Area name",
-      duration: "Duration",
-      skills: "Skills needed",
-    },
-    {
-      title: "Opportunity title placeholder",
-      location: "Area name",
-      duration: "Duration",
-      skills: "Skills needed",
-    },
-  ];
+
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-emerald-50 via-green-50 to-sky-50 text-slate-900">
@@ -303,9 +302,8 @@ export default function Volunteer() {
 
       <aside
         id="volunteer-sidebar"
-        className={`fixed left-0 top-0 z-50 flex h-full w-[300px] max-w-[90vw] flex-col border-r border-emerald-200/60 bg-white/90 backdrop-blur-xl shadow-2xl transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } ${sidebarCollapsed ? "lg:-translate-x-full" : "lg:translate-x-0"} lg:w-[280px]`}
+        className={`fixed left-0 top-0 z-50 flex h-full w-[300px] max-w-[90vw] flex-col border-r border-emerald-200/60 bg-white/90 backdrop-blur-xl shadow-2xl transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } ${sidebarCollapsed ? "lg:-translate-x-full" : "lg:translate-x-0"} lg:w-[280px]`}
       >
         <div className="flex h-20 items-center justify-between border-b border-emerald-200/60 px-6">
           <div className="flex items-center gap-3">
@@ -334,11 +332,10 @@ export default function Volunteer() {
             <a
               key={item.label}
               href={item.href}
-              className={`group flex items-center gap-3 rounded-2xl border p-4 transition-all ${
-                activeNav === item.label
+              className={`group flex items-center gap-3 rounded-2xl border p-4 transition-all ${activeNav === item.label
                   ? "border-emerald-200 bg-gradient-to-r from-emerald-100 to-sky-100 shadow-md"
                   : "border-transparent hover:bg-emerald-50/80"
-              }`}
+                }`}
               onClick={() => {
                 setActiveNav(item.label);
                 setSidebarOpen(false);
@@ -380,9 +377,8 @@ export default function Volunteer() {
       )}
 
       <main
-        className={`pt-20 pb-12 transition-all duration-300 ${
-          sidebarCollapsed ? "ml-0" : "ml-0 lg:ml-[280px]"
-        }`}
+        className={`pt-20 pb-12 transition-all duration-300 ${sidebarCollapsed ? "ml-0" : "ml-0 lg:ml-[280px]"
+          }`}
       >
         <section className="page-shell mx-auto max-w-7xl px-6 lg:px-10">
           <div className="hero-reveal mb-8 rounded-[2rem] border border-emerald-200/60 bg-gradient-to-r from-emerald-50 via-green-50 to-sky-50 p-8 shadow-xl backdrop-blur-xl">
@@ -452,11 +448,10 @@ export default function Volunteer() {
               {filters.map((filter) => (
                 <button
                   key={filter}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                    activeFilter === filter
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${activeFilter === filter
                       ? "bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-lg shadow-emerald-400/20"
                       : "border border-emerald-200 bg-white/80 text-slate-700 hover:bg-emerald-50"
-                  }`}
+                    }`}
                   onClick={() => setActiveFilter(filter)}
                 >
                   {filter}
@@ -607,41 +602,43 @@ export default function Volunteer() {
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="font-['Satoshi'] text-2xl font-bold text-slate-900">
-                  Opportunities
+                  Matched Opportunities
                 </h2>
                 <p className="mt-2 text-sm text-slate-500">
-                  New roles you can apply for
+                  Needs matched to your skills
                 </p>
               </div>
-              <a
-                href="#"
-                className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
-              >
-                Browse all →
-              </a>
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
-              {opportunities.map((opportunity, index) => (
+              {matchesLoading && <p className="text-slate-500">Loading matches...</p>}
+              {matchesError && <p className="text-red-500">{matchesError}</p>}
+              {!matchesLoading && matches.length === 0 && (
+                <p className="text-slate-500">No matches found right now.</p>
+              )}
+              {matches.map((match, index) => (
                 <div
                   key={index}
                   className="rounded-[1.5rem] border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-sky-50 p-6 transition hover:-translate-y-1 hover:shadow-xl"
                 >
                   <h3 className="line-clamp-2 font-semibold text-slate-900">
-                    {opportunity.title}
+                    {match.title}
                   </h3>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
-                    <span>{opportunity.location}</span>
-                    <span>{opportunity.duration}</span>
-                    <span>{opportunity.skills}</span>
+                    <span>📍 {match.location?.address || match.location?.district}</span>
+                    <span>⚡ Urgency: {match.urgencyScore}/10</span>
+                    <span>🎯 Match: {match.matchScore}%</span>
                   </div>
-                  <button className="mt-5 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50">
-                    Apply Now
+                  <p className="mt-2 text-xs text-slate-600">{match.explanation}</p>
+                  <button className="mt-5 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:shadow-emerald-400/25">
+                    Accept Task
                   </button>
                 </div>
               ))}
             </div>
           </div>
+
+
 
           <div className="mt-12">
             <div className="flex items-start justify-between">

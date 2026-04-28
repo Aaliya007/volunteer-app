@@ -4,6 +4,7 @@ import Volunteer from "./Volunteer";
 import Ngo from "./Ngo";
 import RegisterNgoPage from "./RegisterNgoPage";
 import RegisterVolunteerPage from "./RegisterVolunteerPage";
+import SubmitNeedPage from "./SubmitNeedPage";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           path="/register-volunteer"
           element={<RegisterVolunteerPage />}
         />
+        <Route path="/submit-need" element={<SubmitNeedPage />} />
       </Routes>
     </BrowserRouter>
   );

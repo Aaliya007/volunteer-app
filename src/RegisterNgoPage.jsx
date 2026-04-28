@@ -147,21 +147,52 @@ export default function RegisterNgoPage() {
     formData.reference2Phone.trim() &&
     formData.agreeDeclaration;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const nextErrors = validate();
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) return;
 
+    const registrationType = formData.cert12A80G ? "12A/80G" :
+      formData.nitiDarpanId ? "NITI_Darpan" : "Society_Trust";
+
+    const registrationId = formData.cert12A80G ||
+      formData.nitiDarpanId || formData.societyTrustNumber;
+
     const payload = {
-      ...formData,
-      operatingDistricts: formData.operatingDistricts.filter((d) => d.trim()),
-      verification_status: "pending",
+      name: formData.ngoName.trim(),
+      registrationType,
+      registrationId,
+      operatingRegion: `${formData.operatingState} - ${formData.operatingDistricts.filter(d => d.trim()).join(", ")}`,
+      contactName: formData.primaryName.trim(),
+      contactEmail: formData.primaryEmail.trim(),
+      contactPhone: formData.primaryPhone.trim(),
+      referencePhones: [
+        formData.reference1Phone.trim(),
+        formData.reference2Phone.trim(),
+      ].filter(Boolean),
     };
 
-    console.log("NGO signup payload:", payload);
-    setSubmitted(true);
+    try {
+      const response = await fetch("https://sahaay-923054627985.asia-south1.run.app/ngo/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      console.log("NGO registration response:", result);
+
+      if (result.status === "success" || response.ok) {
+        setSubmitted(true);
+      } else {
+        alert("Registration failed: " + (result.message || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("NGO registration error:", err);
+      alert("Failed to connect to server. Please try again.");
+    }
   };
 
   const inputClass =
@@ -526,11 +557,10 @@ export default function RegisterNgoPage() {
                   <button
                     type="submit"
                     disabled={!isFormReady}
-                    className={`rounded-2xl px-8 py-4 text-sm font-semibold text-white shadow-lg transition ${
-                      isFormReady
+                    className={`rounded-2xl px-8 py-4 text-sm font-semibold text-white shadow-lg transition ${isFormReady
                         ? "bg-gradient-to-r from-emerald-500 via-green-500 to-sky-500 shadow-emerald-400/25 hover:-translate-y-0.5 hover:opacity-95"
                         : "cursor-not-allowed bg-slate-300 text-slate-500 shadow-none"
-                    }`}
+                      }`}
                   >
                     Submit NGO application
                   </button>

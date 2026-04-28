@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { db } from "./firebase";
+import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import {
   Bell,
   CalendarDays,
@@ -20,6 +22,18 @@ export default function Ngo() {
   const [activeNav, setActiveNav] = useState("Overview");
   const [taskFilter, setTaskFilter] = useState("All");
   const [menuHidden, setMenuHidden] = useState(false);
+  const [needs, setNeeds] = useState([]);
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "needs"), (snap) => {
+      setNeeds(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsub();
+  }, []);
+
+  const updateNeedStatus = async (needId, status) => {
+    await updateDoc(doc(db, "needs", needId), { verificationStatus: status });
+  };
 
   const navItems = [
     { label: "Overview", icon: LayoutDashboard, href: "#" },
@@ -225,11 +239,10 @@ export default function Ngo() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setActiveNav(item.label)}
-                  className={`flex items-center gap-3 rounded-2xl border px-4 py-4 transition ${
-                    active
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-800 shadow-sm"
-                      : "border-transparent text-slate-600 hover:border-emerald-100 hover:bg-emerald-50/60 hover:text-slate-900"
-                  }`}
+                  className={`flex items-center gap-3 rounded-2xl border px-4 py-4 transition ${active
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800 shadow-sm"
+                    : "border-transparent text-slate-600 hover:border-emerald-100 hover:bg-emerald-50/60 hover:text-slate-900"
+                    }`}
                 >
                   <Icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
@@ -295,11 +308,10 @@ export default function Ngo() {
                     setActiveNav(item.label);
                     setSidebarOpen(false);
                   }}
-                  className={`flex items-center gap-3 rounded-2xl border px-4 py-4 transition ${
-                    active
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-800 shadow-sm"
-                      : "border-transparent text-slate-600 hover:border-emerald-100 hover:bg-emerald-50/60 hover:text-slate-900"
-                  }`}
+                  className={`flex items-center gap-3 rounded-2xl border px-4 py-4 transition ${active
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800 shadow-sm"
+                    : "border-transparent text-slate-600 hover:border-emerald-100 hover:bg-emerald-50/60 hover:text-slate-900"
+                    }`}
                 >
                   <Icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
@@ -494,11 +506,10 @@ export default function Ngo() {
                 <button
                   key={filter}
                   onClick={() => setTaskFilter(filter)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                    taskFilter === filter
-                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-400/20"
-                      : "border border-emerald-200 bg-white text-slate-700 hover:bg-emerald-50"
-                  }`}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${taskFilter === filter
+                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-400/20"
+                    : "border border-emerald-200 bg-white text-slate-700 hover:bg-emerald-50"
+                    }`}
                 >
                   {filter}
                 </button>
@@ -547,6 +558,58 @@ export default function Ngo() {
             </div>
           </div>
 
+          <div className="mt-12 rounded-[2rem] border border-emerald-200/60 bg-white/80 p-8 shadow-xl backdrop-blur-xl">
+            <div>
+              <h2 className="font-['Satoshi'] text-2xl font-bold text-slate-900">
+                Needs — Coordinator Review
+              </h2>
+              <p className="mt-2 text-sm text-slate-600">
+                Verify or dispute needs before they surface to volunteers
+              </p>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              {needs.length === 0 && <p className="text-slate-500">No needs found.</p>}
+              {needs.map((need) => (
+                <div key={need.id} className="rounded-2xl border border-emerald-200/60 bg-emerald-50/60 p-5">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-slate-900 line-clamp-2">{need.title || need.description}</h3>
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
+                        <span>📍 {need.location?.address || need.district || "Unknown location"}</span>
+                        <span>⚡ Urgency: {need.urgencyScore}/10</span>
+                        <span>📂 {need.category}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${need.verificationStatus === "verified"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : need.verificationStatus === "disputed"
+                          ? "bg-rose-100 text-rose-700"
+                          : "bg-amber-100 text-amber-700"
+                        }`}>
+                        {need.verificationStatus || "unverified"}
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => updateNeedStatus(need.id, "verified")}
+                          className="rounded-xl bg-emerald-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600"
+                        >
+                          Verify
+                        </button>
+                        <button
+                          onClick={() => updateNeedStatus(need.id, "disputed")}
+                          className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                        >
+                          Dispute
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           <div className="mt-12 grid gap-6 lg:grid-cols-2">
             <div className="rounded-[2rem] border border-emerald-200/60 bg-white/80 p-8 shadow-xl backdrop-blur-xl">
               <div className="flex items-start justify-between">
