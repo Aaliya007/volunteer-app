@@ -61,3 +61,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 >>>>>>> 413ebcdb17c55eb0dc02c5325e96c9199a71dea0
+.npm-cache/
+node_modules/
+dist/
