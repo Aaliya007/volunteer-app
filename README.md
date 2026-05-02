@@ -44,14 +44,20 @@ npm install
 ```
 
 ### 3. Create environment variables
+```bash
 cat <<EOF > .env
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
 VITE_FIREBASE_PROJECT_ID=your_project_id
 EOF
+```
 
 ### 4. Run development server
+```bash
 npm run dev
+```
 
 ### 5. Open in browser
+```bash
 http://localhost:5173
+```
