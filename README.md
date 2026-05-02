@@ -36,7 +36,22 @@ Our mission is to **transform slow, fragmented workflows into fast, precise, and
 ```bash
 git clone https://github.com/Aaliya007/volunteer-app.git
 cd volunteer-app
+```
 
 ### 2. Install dependencies
 ```bash
 npm install
+```
+
+### 3. Create environment variables
+cat <<EOF > .env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+EOF
+
+### 4. Run development server
+npm run dev
+
+### 5. Open in browser
+http://localhost:5173
