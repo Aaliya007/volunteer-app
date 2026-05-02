@@ -1,4 +1,6 @@
 # 🌐 Sahaay — AI-Powered Crisis Response Platform
+<img width="1919" height="1089" alt="image" src="https://github.com/user-attachments/assets/68c39891-b652-4190-94c0-74b20b00fe26" />
+
 
 ## 📌 Introduction
 Sahaay is an AI-driven platform designed to bridge the gap between people in need, NGOs, and volunteers. It solves the problem of delayed and inefficient crisis response caused by manual processing, language barriers, and scattered communication systems.
@@ -29,6 +31,8 @@ Our mission is to **transform slow, fragmented workflows into fast, precise, and
   Easy registration for NGOs and volunteers
 
 ---
+## 🌍 Live Demo
+https://ngo-helper-c784a.web.app/
 
 ## 🛠️ Installation & Setup
 
@@ -61,3 +65,11 @@ npm run dev
 ```bash
 http://localhost:5173
 ```
+## 🔮 Future Improvements
+
+- 📱 Mobile application for wider accessibility  
+- 🧠 More advanced AI models for deeper context understanding  
+- 📍 Real-time tracking of request fulfillment  
+- 🔔 Notification system for volunteers and NGOs  
+- 🌐 Support for more regional and international languages  
+- 📊 Analytics dashboard for impact tracking  
