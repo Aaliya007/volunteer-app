@@ -1,17 +1,42 @@
-# React + Vite
+# 🌐 Sahaay — AI-Powered Crisis Response Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📌 Introduction
+Sahaay is an AI-driven platform designed to bridge the gap between people in need, NGOs, and volunteers. It solves the problem of delayed and inefficient crisis response caused by manual processing, language barriers, and scattered communication systems.
 
-Currently, two official plugins are available:
+With Sahaay, unstructured inputs like handwritten forms, regional languages, and voice notes are instantly processed using AI to extract key information such as urgency, location, and specific needs. NGO coordinators can verify these requests in real-time, and the system intelligently matches them with the most suitable volunteers.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Our mission is to **transform slow, fragmented workflows into fast, precise, and impactful action.**
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 Features
+- 🤖 **AI-Powered Processing**  
+  Converts handwritten, multilingual, and audio inputs into structured data
 
-## Expanding the ESLint configuration
+- 🌍 **Multilingual Support**  
+  Supports Hindi, Punjabi, Hinglish and more
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
+- 📊 **Coordinator Dashboard**  
+  Real-time request tracking with one-click verification
+
+- 🎯 **Smart Matching Engine**  
+  Matches volunteers based on skills, location, and availability
+
+- ⚡ **Fast Processing**  
+  Reduces response time from days to seconds
+
+- 👥 **Simple Onboarding**  
+  Easy registration for NGOs and volunteers
+
+---
+
+## 🛠️ Installation & Setup
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/Aaliya007/volunteer-app.git
+cd volunteer-app
+
+### 2. Install dependencies
+```bash
+npm install
