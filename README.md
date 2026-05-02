@@ -65,6 +65,62 @@ npm run dev
 ```bash
 http://localhost:5173
 ```
+## 📂 Project Structure
+
+```bash
+VOLUNTEER-APP/
+│── .firebase/                     # Firebase hosting cache
+│   │── hosting.ZGlzc.cache
+│   │── hosting.ZGlzdA.cache
+│
+│── dis/                           
+│   │── index.html
+│
+│── node_modules/                  # Installed dependencies
+│
+│── public/                        # Static public assets
+│   │── favicon.svg
+│   │── icons.svg
+│   │── sahaay.png
+│
+│── src/                           # Main application source
+│   │── assets/                    # Images & static files
+│   │   │── hero.png
+│   │   │── logo.png
+│   │   │── react.svg
+│   │   │── vite.svg
+│   │
+│   │── components/               
+│   │   │── NeedExtractor.jsx
+│   │
+│   │── services/                  # Firebaselogic
+│   │   │── extractor.js
+│   │── App.css                    # App styles
+│   │── App.jsx                    # Root component
+│   │── firebase.js                # Firebase configuration
+│   │── index.css                  # Global styles
+│   │── LandingPage.jsx            # Landing page
+│   │── main.jsx                   # Entry point
+│   │── Ngo.jsx                    # NGO dashboard/page
+│   │── RegisterNgoPage.jsx        # NGO registration
+│   │── RegisterVolunteerPage.jsx  # Volunteer registration
+│   │── SubmitNeedPage.jsx         # Submit request page
+│   │── Volunteer.jsx              # Volunteer dashboard
+│
+│── .firebaserc                    # Firebase project config
+│── .gitignore                     # Git ignored files
+│── eslint.config.js               # ESLint configuration
+│── firebase.json                  # Firebase hosting config
+│── index.html                     # Root HTML file
+│── LICENSE                        # License file
+│── package.json                   # Project metadata & scripts
+│── package-lock.json              # Dependency lock file
+│── postcss.config.js              # PostCSS config
+│── tailwind.config.js             # Tailwind CSS config
+│── vite.config.js                 # Vite configuration
+│── README.md                      # Documentation
+
+```
 ## 🔮 Future Improvements
 
 - 📱 Mobile application for wider accessibility  
