@@ -52,7 +52,7 @@ export default function SubmitNeedPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4 lg:px-10">
           <button onClick={() => navigate("/")} className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg">
-              <img src="/src/assets/logo.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
+              <img src="/sahaay.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
             </div>
             <div>
               <h1 className="text-xl font-black text-slate-900">Sahaay</h1>
@@ -94,8 +94,8 @@ export default function SubmitNeedPage() {
             onClick={handleSubmit}
             disabled={!file || uploading || processing}
             className={`mt-6 w-full rounded-2xl px-6 py-4 font-semibold text-white shadow-lg transition ${file && !uploading && !processing
-                ? "bg-gradient-to-r from-emerald-500 to-sky-500 hover:-translate-y-0.5"
-                : "cursor-not-allowed bg-slate-300"
+              ? "bg-gradient-to-r from-emerald-500 to-sky-500 hover:-translate-y-0.5"
+              : "cursor-not-allowed bg-slate-300"
               }`}
           >
             {uploading ? "Uploading..." : processing ? "Processing with AI (~20s)..." : "Submit for Processing"}
@@ -123,24 +123,50 @@ export default function SubmitNeedPage() {
 
           {result && (
             <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
-              <h3 className="text-lg font-bold text-slateald-900 mb-4">
+              <h3 className="text-lg font-bold mb-4">
                 ✅ Need extracted and saved to Firestore
               </h3>
               <div className="space-y-2 text-sm text-slate-700">
-                <p><span className="font-semibold">Title:</span> {result.title}</p>
-                <p><span className="font-semibold">Description:</span> {result.description}</p>
-                <p><span className="font-semibold">Category:</span> {result.category}</p>
-                <p><span className="font-semibold">Urgency:</span> {result.urgencyScore}/10</p>
-                <p><span className="font-semibold">Location:</span> {result.location?.address}</p>
-                <p><span className="font-semibold">Skills needed:</span> {result.skillsRequired?.join(", ")}</p>
-                <p><span className="font-semibold">Status:</span> {result.verificationStatus}</p>
+                <p><span className="font-semibold">Summary:</span> {result.content?.summary}</p>
+                <p><span className="font-semibold">Category:</span> {result.category?.primary}</p>
+                <p><span className="font-semibold">Urgency:</span> {result.urgency?.score}/10</p>
+                <p><span className="font-semibold">Location:</span> {result.location?.address_text}, {result.location?.district}</p>
+                <p><span className="font-semibold">Skills needed:</span> {(result.skills_required || []).join(", ")}</p>
+                <p><span className="font-semibold">Status:</span> {result.verification_status}</p>
+                <p><span className="font-semibold">Concern:</span> {result.content?.extracted_fields?.primary_concern_english}</p>
               </div>
-              <button
-                onClick={() => navigate("/ngo")}
-                className="mt-5 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-600"
-              >
-                Go to Coordinator Dashboard →
-              </button>
+              <div className="mt-5 flex gap-3">
+                <button
+                  onClick={() => navigate("/ngo")}
+                  className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-600"
+                >
+                  Go to Coordinator Dashboard →
+                </button>
+                <button
+                  onClick={() => {
+                    const content = `
+SAHAAY - FIELD REPORT
+=====================
+Summary: ${result.content?.summary}
+Category: ${result.category?.primary}
+Urgency: ${result.urgency?.score}/10
+Location: ${result.location?.address_text}, ${result.location?.district}
+Skills Needed: ${(result.skills_required || []).join(", ")}
+Status: ${result.verification_status}
+Concern: ${result.content?.extracted_fields?.primary_concern_english}
+      `.trim();
+                    const blob = new Blob([content], { type: "text/plain" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "field-report.txt";
+                    a.click();
+                  }}
+                  className="rounded-xl border border-emerald-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50"
+                >
+                  Download Report
+                </button>
+              </div>
             </div>
           )}
         </div>

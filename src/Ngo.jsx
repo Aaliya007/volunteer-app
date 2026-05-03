@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 import { db } from "./firebase";
 import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import {
@@ -561,7 +563,54 @@ export default function Ngo() {
               ))}
             </div>
           </div>
-
+          <div className="mt-12 rounded-[2rem] border border-emerald-200/60 bg-white/80 p-8 shadow-xl backdrop-blur-xl">
+            <div className="mb-6">
+              <h2 className="font-['Satoshi'] text-2xl font-bold text-slate-900">
+                Needs Heatmap
+              </h2>
+              <p className="mt-2 text-sm text-slate-600">
+                Live map of open needs across regions
+              </p>
+            </div>
+            <div style={{ height: "400px", borderRadius: "1rem", overflow: "hidden" }}>
+              <MapContainer
+                center={[22.9734, 78.6569]}
+                zoom={5}
+                style={{ height: "100%", width: "100%" }}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; OpenStreetMap contributors'
+                />
+                {needs.map((need) => {
+                  const lat = need.lat || need.location?.lat;
+                  const lng = need.lng || need.location?.lng;
+                  if (!lat || !lng) return null;
+                  const urgency = need.urgencyScore || need.urgency?.score || 5;
+                  const color = urgency >= 8 ? "#ef4444" : urgency >= 5 ? "#f97316" : "#22c55e";
+                  return (
+                    <CircleMarker
+                      key={need.id}
+                      center={[lat, lng]}
+                      radius={urgency * 2}
+                      fillColor={color}
+                      color={color}
+                      fillOpacity={0.6}
+                      weight={1}
+                    >
+                      <Popup>
+                        <strong>{need.title || need.description?.slice(0, 50)}</strong>
+                        <br />
+                        Urgency: {urgency}/10
+                        <br />
+                        Status: {need.verificationStatus || need.verification_status}
+                      </Popup>
+                    </CircleMarker>
+                  );
+                })}
+              </MapContainer>
+            </div>
+          </div>
           <div className="mt-12 rounded-[2rem] border border-emerald-200/60 bg-white/80 p-8 shadow-xl backdrop-blur-xl">
             <div>
               <h2 className="font-['Satoshi'] text-2xl font-bold text-slate-900">

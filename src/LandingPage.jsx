@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { MapContainer, TileLayer, CircleMarker } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { db } from "./firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -8,6 +12,15 @@ export default function LandingPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
   const [introExit, setIntroExit] = useState(false);
+  const [needs, setNeeds] = useState([]);
+
+  useEffect(() => {
+    async function fetchNeeds() {
+      const snap = await getDocs(collection(db, "needs"));
+      setNeeds(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }
+    fetchNeeds();
+  }, []);
 
   const openAuthModal = (selectedRole, loginMode) => {
     setRole(selectedRole);
@@ -642,14 +655,39 @@ export default function LandingPage() {
                   </div>
 
                   <div className="mt-6 rounded-3xl border border-emerald-200/50 bg-gradient-to-br from-emerald-50 via-green-50 to-sky-50 p-5 hover-lift">
-                    <p className="text-sm font-medium text-slate-700">Map / region preview</p>
-                    <div className="relative mt-4 h-52 overflow-hidden rounded-2xl border border-emerald-200/50 bg-white/70">
-                      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.05)_1px,transparent_1px)] bg-[size:32px_32px]" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <p className="text-sm font-medium text-slate-600">
-                          Map or location-based visualization goes here
-                        </p>
-                      </div>
+                    <p className="text-sm font-medium text-slate-700">Live Needs Map</p>
+                    <div className="relative mt-4 h-52 overflow-hidden rounded-2xl border border-emerald-200/50">
+                      <MapContainer
+                        center={[23.5937, 78.9629]}
+                        zoom={4}
+                        style={{ height: "100%", width: "100%" }}
+                        zoomControl={false}
+                        dragging={false}
+                        scrollWheelZoom={false}
+                      >
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution=""
+                        />
+                        {needs.map((need) => {
+                          const lat = need.lat || need.location?.lat;
+                          const lng = need.lng || need.location?.lng;
+                          if (!lat || !lng) return null;
+                          const urgency = need.urgencyScore || need.urgency?.score || 5;
+                          const color = urgency >= 8 ? "#ef4444" : urgency >= 5 ? "#f97316" : "#22c55e";
+                          return (
+                            <CircleMarker
+                              key={need.id}
+                              center={[lat, lng]}
+                              radius={urgency * 2}
+                              fillColor={color}
+                              color={color}
+                              fillOpacity={0.6}
+                              weight={1}
+                            />
+                          );
+                        })}
+                      </MapContainer>
                     </div>
                   </div>
                 </div>
