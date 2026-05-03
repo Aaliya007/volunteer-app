@@ -430,9 +430,7 @@ export default function RegisterVolunteerPage() {
         <header className="sticky top-0 z-40 border-b border-emerald-200/50 bg-white/75 backdrop-blur-xl">
           <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4 lg:px-10">
             <button onClick={() => navigate("/")} className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-emerald-400/10">
-                <img src="/src/assets/logo.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
-              </div>
+              <img src="/sahaay.png" alt="Sahaay Logo" className="h-12 w-12 object-contain" />
               <div className="text-left">
                 <h1 className="brand-heading text-xl font-black tracking-[-0.03em] text-slate-900">
                   Sahaay

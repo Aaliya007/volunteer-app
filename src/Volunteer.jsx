@@ -242,9 +242,7 @@ export default function Volunteer() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-emerald-200/60 bg-white/85 backdrop-blur-xl shadow-sm">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-emerald-400/10">
-              <img src="/src/assets/logo.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
-            </div>
+            <img src="/sahaay.png" alt="Sahaay Logo" className="h-12 w-12 object-contain" />
             <div>
               <h1 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
                 Sahaay
@@ -307,9 +305,7 @@ export default function Volunteer() {
       >
         <div className="flex h-20 items-center justify-between border-b border-emerald-200/60 px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-emerald-400/10">
-              <img src="/src/assets/logo.png" alt="Sahaay Logo" className="h-full w-full object-contain p-1" />
-            </div>
+            <img src="/sahaay.png" alt="Sahaay Logo" className="h-12 w-12 object-contain" />
             <div>
               <h1 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
                 Sahaay
