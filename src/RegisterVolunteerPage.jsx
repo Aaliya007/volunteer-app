@@ -430,7 +430,7 @@ export default function RegisterVolunteerPage() {
               </div>
               <div className="text-left">
                 <h1 className="brand-heading text-xl font-black tracking-[-0.03em] text-slate-900">
-                  HelpLink
+                  Sahaay
                 </h1>
                 <p className="text-xs font-medium text-emerald-700">
                   Volunteer Registration
@@ -450,7 +450,7 @@ export default function RegisterVolunteerPage() {
                 Build your volunteer profile
               </h2>
               <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                Add your details below. Keep it accurate so NGOs can reach you quickly and HelpLink can recommend suitable work.
+                Add your details below. Keep it accurate so NGOs can reach you quickly and Sahaay can recommend suitable work.
               </p>
             </div>
 

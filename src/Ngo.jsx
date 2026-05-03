@@ -166,7 +166,7 @@ export default function Ngo() {
             </div>
             <div>
               <h1 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                HelpLink
+                Sahaay
               </h1>
               <p className="text-xs text-emerald-700">NGO Dashboard</p>
             </div>
@@ -210,7 +210,7 @@ export default function Ngo() {
             </div>
             <div>
               <h2 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                HelpLink
+                Sahaay
               </h2>
               <p className="text-xs text-emerald-700">NGO Portal</p>
             </div>
@@ -268,7 +268,7 @@ export default function Ngo() {
               </div>
               <div>
                 <h2 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                  HelpLink
+                  Sahaay
                 </h2>
                 <p className="text-xs text-emerald-700">NGO Portal</p>
               </div>

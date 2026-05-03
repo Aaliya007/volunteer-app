@@ -284,7 +284,7 @@ export default function Volunteer() {
             </div>
             <div>
               <h1 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                HelpLink
+                Sahaay
               </h1>
               <p className="text-xs text-emerald-700">Volunteer Dashboard</p>
             </div>
@@ -350,7 +350,7 @@ export default function Volunteer() {
             </div>
             <div>
               <h1 className="font-['Satoshi'] text-xl font-black tracking-[-0.03em] text-slate-900">
-                HelpLink
+                Sahaay
               </h1>
               <p className="text-xs text-emerald-700">Volunteer Portal</p>
             </div>
